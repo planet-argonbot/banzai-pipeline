@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'banzai/pipeline/version'
+require 'banzai-pipeline/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "banzai-pipeline"
-  spec.version       = Banzai::Pipeline::VERSION
+  spec.version       = BanzaiPipeline::VERSION
   spec.authors       = ["Carlos Rodriguez"]
   spec.email         = ["carlos@eddorre.com"]
   spec.summary       = %q{TODO: Write a short summary. Required.}
