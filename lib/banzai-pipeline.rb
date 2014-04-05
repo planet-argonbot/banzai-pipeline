@@ -5,4 +5,4 @@ if defined?(Capistrano::VERSION)
 end
 
 recipe_version ||= 2
-load "File.expand_path(\"../capistrano/tasks/assets_v#{recipe_version}.rake\", __FILE__)"
+load File.expand_path("../capistrano/tasks/assets_v#{recipe_version}.rake", __FILE__)
