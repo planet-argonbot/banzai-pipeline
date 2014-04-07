@@ -1,11 +1,17 @@
 namespace :deploy do
   namespace :assets do
     # Override the Capistrano default task
-    task :precompile, :roles => :web, :except => { :no_release => true } do
-      if force_asset_compilation? || assets_dirty?
-        run %Q{cd #{latest_release} && #{rake} RAILS_ENV=#{rails_env} #{asset_env} assets:precompile}
-      else
-        logger.info "Skipping asset pre-compilation because there were no asset changes"
+    task :precompile do
+      on roles(:app) do
+        if force_asset_compilation? || assets_dirty?
+          within fetch(:latest_release_directory) do
+            with rails_env: fetch(:rails_env) do
+              execute :rake, 'assets:precompile'
+            end
+          end
+        else
+          puts "Skipping asset pre-compilation because there were no asset changes"
+        end
       end
     end
 
@@ -14,12 +20,11 @@ namespace :deploy do
     end
 
     def assets_dirty?
-      r = safe_current_revision
+      r = fetch(:safe_current_revision)
       return true if r.nil?
-      from = source.next_revision(r)
-      asset_changing_files = ["vendor/assets/", "app/assets/", "lib/assets", "Gemfile", "Gemfile.lock"]
+      asset_changing_files = ["/vendor/assets/", "/app/assets/", "/lib/assets", "/Gemfile", "/Gemfile.lock"]
       asset_changing_files = asset_changing_files.select do |f|
-        File.exists? f
+        test("[ -f #{file} ]")
       end
       capture("cd #{shared_path}/cached-copy && #{source.local.log(current_revision, real_revision)} #{asset_changing_files.join(" ")} | wc -l").to_i > 0
     end
@@ -28,10 +33,10 @@ namespace :deploy do
       begin
         current_revision
       rescue => e
-        logger.info "*" * 80
-        logger.info "An exception as occured while fetching the current revision. This is to be expected if this is your first deploy to this machine. Othewise, something is broken :("
-        logger.info e.inspect
-        logger.info "*" * 80
+        puts "*" * 80
+        puts "An exception as occured while fetching the current revision. This is to be expected if this is your first deploy to this machine. Othewise, something is broken :("
+        puts e.inspect
+        puts "*" * 80
         nil
       end
     end
