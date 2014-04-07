@@ -15,14 +15,15 @@ Capistrano::Configuration.instance(:must_exist).load do
       end
 
       def assets_dirty?
-        r = safe_current_revision
-        return true if r.nil?
-        from = source.next_revision(r)
+        safe_revision = safe_current_revision
+        return true if safe_revision.nil?
+        from = source.next_revision(safe_revision)
         asset_changing_files = ["vendor/assets/", "app/assets/", "lib/assets", "Gemfile", "Gemfile.lock"]
-        asset_changing_files = asset_changing_files.select do |f|
-          File.exists? f
+        asset_changing_files = asset_changing_files.select do |file|
+          File.exists? file
         end
-        capture("cd #{shared_path}/cached-copy && #{source.local.log(current_revision, real_revision)} #{asset_changing_files.join(" ")} | wc -l").to_i > 0
+
+        capture("cd #{shared_path}/cached-copy && #{source.local.log(from, real_revision)} #{asset_changing_files.join(" ")} | wc -l").to_i > 0
       end
 
       def safe_current_revision
